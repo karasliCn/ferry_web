@@ -67,6 +67,7 @@ import {
   GenerateForm
 } from '@/components/VueFormMaking'
 import 'form-making/dist/FormMaking.css'
+
 Vue.component(GenerateForm.name, GenerateForm)
 
 import {
@@ -75,6 +76,7 @@ import {
 } from '@/api/process/work-order'
 import { listUser } from '@/api/system/sysuser'
 import { getDeptList } from '@/api/system/dept'
+
 export default {
   name: 'Create',
   data() {
@@ -136,48 +138,59 @@ export default {
     submitAction(item) {
       this.$refs['ruleForm'].validate((valid) => {
         if (valid) {
+          debugger
           this.submitDisabled = true
           var stateMap = {}
           this.ruleForm.process = parseInt(this.$route.query.processId)
           this.ruleForm.classify = this.processStructureValue.process.classify
           stateMap['id'] = item.target
           this.ruleForm.source_state = this.processStructureValue.nodes[this.active].label
-          for (var v of this.processStructureValue.nodes) {
-            if (v.id === item.target) {
-              if (v.assignType !== undefined) {
-                stateMap['process_method'] = v.assignType
-              }
-              if (v.assignValue !== undefined) {
-                stateMap['processor'] = Array.from(new Set(v.assignValue))
-              }
-              stateMap['label'] = v.label
-              break
-            }
-          }
-          this.ruleForm.state = [stateMap]
 
+          var promiseList = []
           this.ruleForm.tpls = {
             'form_structure': [],
             'form_data': []
           }
-          // 绑定流程任务
-          this.ruleForm.tasks = this.processStructureValue.process.task === undefined ? [] : this.processStructureValue.process.task
-          // 追加节点任务
-          if (this.processStructureValue.nodes[this.active].task !== undefined && this.processStructureValue.nodes[this.active].task.length > 0) {
-            for (var task of this.processStructureValue.nodes[this.active].task) {
-              if (this.ruleForm.tasks.indexOf(task) === -1) {
-                this.ruleForm.tasks.push(task)
-              }
-            }
-          }
-
-          var promiseList = []
           for (var tpl of this.processStructureValue.tpls) {
             tpl.form_structure.id = tpl.id
             this.ruleForm.tpls.form_structure.push(tpl.form_structure)
             promiseList.push(this.$refs['generateForm-' + tpl.id][0].getData())
           }
+
           Promise.all(promiseList).then(values => {
+            for (var v of this.processStructureValue.nodes) {
+              if (v.id === item.target) {
+                if (v.assignType !== undefined) {
+                  stateMap['process_method'] = v.assignType
+                }
+                if (v.assignValue !== undefined) {
+                  if (v.assignType !== 'template') {
+                    stateMap['processor'] = Array.from(new Set(v.assignValue))
+                  } else {
+                    const inputField = values.find(value => Object.keys(value).includes(v.assignValue))
+                    if (inputField) {
+                      stateMap['process_method'] = 'person'
+                      stateMap['processor'] = [inputField[v.assignValue]]
+                    }
+                  }
+                }
+                stateMap['label'] = v.label
+                break
+              }
+            }
+            this.ruleForm.state = [stateMap]
+
+            // 绑定流程任务
+            this.ruleForm.tasks = this.processStructureValue.process.task === undefined ? [] : this.processStructureValue.process.task
+            // 追加节点任务
+            if (this.processStructureValue.nodes[this.active].task !== undefined && this.processStructureValue.nodes[this.active].task.length > 0) {
+              for (var task of this.processStructureValue.nodes[this.active].task) {
+                if (this.ruleForm.tasks.indexOf(task) === -1) {
+                  this.ruleForm.tasks.push(task)
+                }
+              }
+            }
+
             this.ruleForm.source = this.processStructureValue.nodes[this.active].id
             this.ruleForm.tpls.form_data = values
             this.ruleForm.is_exec_task = item.isExecuteTask

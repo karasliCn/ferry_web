@@ -177,6 +177,8 @@
                     :data="ruleForm.structure"
                     :height="600"
                     :lang="lang"
+                    :template-infos="templates"
+                    :field-infos="fieldInfos"
                   />
                 </div>
               </div>
@@ -239,6 +241,8 @@ export default {
       groups: [],
       departments: [],
       templates: [],
+      templateInfos: [],
+      fieldInfos: [],
       taskListData: [],
       wfdDesignRefresh: true,
       classifyListData: [],
@@ -301,6 +305,8 @@ export default {
         per_page: 99999
       }).then(response => {
         this.templates = response.data.data
+        console.log('pm get templates')
+        console.log(JSON.stringify(this.templates))
       })
     },
     // 获取用户

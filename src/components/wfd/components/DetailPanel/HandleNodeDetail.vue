@@ -26,13 +26,14 @@
           :placeholder="i18n['handleNode.assignType.placeholder']"
           :value="model.assignType"
           :disabled="readOnly"
-          @change="(e) => { onChange('assignValue', []); onChange('assignType', e); assignmentType() }"
+          @change="(e) => { onChange('assignValue', []); onChange('assignType', e); onChange('selectedTemplate', ''); assignmentType() }"
         >
           <el-option key="person" value="person" :label="i18n['handleNode.assignType.person']" />
           <el-option key="role" value="role" :label="i18n['userTask.assignType.role']" />
           <!-- <el-option key="persongroup" value="persongroup" :label="i18n['handleNode.assignType.persongroup']"/> -->
           <el-option key="department" value="department" :label="i18n['handleNode.assignType.department']" />
           <el-option key="variable" value="variable" :label="i18n['handleNode.assignType.variable']" />
+          <el-option key="template" value="template" :label="i18n['userTask.assignType.template']" />
         </el-select>
       </div>
       <div v-if="model.assignType === 'person'" class="panelRow">
@@ -48,6 +49,36 @@
           @change="(e) => { onChange('assignValue', e); getPersons(e) }"
         >
           <el-option v-for="user in users" :key="user.userId" :label="user.nickName===''?user.username:user.nickName" :value="user.userId" />
+        </el-select>
+      </div>
+      <div v-if="model.assignType === 'template'" class="panelRow">
+        <div><span style="color: red">*</span> {{ i18n['userTask.assignType.template.title'] }}：</div>
+        <el-select
+          size="small"
+          style="width:90%; font-size:12px"
+          :placeholder="i18n['userTask.assignType.template.placeholder']"
+          :disabled="readOnly"
+          :value="model.selectedTemplate"
+          :multiple="false"
+          :filterable="true"
+          @change="(e) => { onChange('selectedTemplate', e); getTemplateInfo(e) }"
+        >
+          <el-option v-for="template in templatesBase" :key="template.id" :label="template.name" :value="template.id" />
+        </el-select>
+      </div>
+      <div v-if="model.assignType === 'template' && model.selectedTemplate && model.selectedTemplate !== ''" class="panelRow">
+        <div><span style="color: red">*</span> {{ i18n['userTask.assignType.template.field'] }}：</div>
+        <el-select
+          size="small"
+          style="width:90%; font-size:12px"
+          :placeholder="i18n['userTask.assignType.template.field.placeholder']"
+          :disabled="readOnly"
+          :value="model.assignValue"
+          :multiple="false"
+          :filterable="true"
+          @change="(e) => { onChange('assignValue', e); }"
+        >
+          <el-option v-for="field in fields" :key="field.model" :label="field.name" :value="field.model" />
         </el-select>
       </div>
       <div v-else-if="model.assignType === 'role'" class="panelRow">
@@ -157,6 +188,7 @@
 <script>
 import DefaultDetail from './DefaultDetail'
 import NodeDetail from './NodeDetail'
+import { getTemplateFields } from '@/api/system/template'
 export default {
   inject: ['i18n'],
   components: {
@@ -214,7 +246,28 @@ export default {
         value: 2,
         label: '创建者负责人'
       }],
-      roleList: []
+      roleList: [],
+      remoteFunc: {
+        async templateInfo(resolve) {
+          const res = await getTemplateFields(this.model.selectedTemplate)
+          const fields = []
+          if (res && res.code === '200') {
+            fields.push(...res.data.form_structure.list)
+          }
+          resolve(fields)
+        }
+      },
+      fields: []
+    }
+  },
+  mounted() {
+    debugger
+    console.log('call mounted')
+    console.log(JSON.stringify(this.model))
+    if (this.model.assignType === 'template') {
+      getTemplateFields(this.model.selectedTemplate).then(response => {
+        this.fields = response.data.form_structure.list
+      })
     }
   },
   methods: {
@@ -231,6 +284,11 @@ export default {
     },
     assignmentType() {
       this.onChange('isCounterSign', false)
+    },
+    getTemplateInfo(e) {
+      getTemplateFields(e).then(response => {
+        this.fields = response.data.form_structure.list
+      })
     }
   }
 }

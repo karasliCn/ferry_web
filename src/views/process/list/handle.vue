@@ -80,8 +80,10 @@
                 currentNode.hideTpls!==null &&
                 currentNode.hideTpls.indexOf(tplItem.form_structure.id)!==-1) ||
                 (currentNode.writeTpls===undefined ||
-                currentNode.writeTpls===null ||
-                currentNode.writeTpls.indexOf(tplItem.form_structure.id)===-1)||
+                currentNode.writeTpls===null
+                ||
+                currentNode.writeTpls.indexOf(tplItem.form_structure.id)===-1
+                )||
                 (isActiveProcessing && currentNode.activeOrder))"
               :remote="remoteFunc"
               :value="tplItem.form_data"

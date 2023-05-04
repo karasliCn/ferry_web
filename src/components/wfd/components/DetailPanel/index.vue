@@ -140,6 +140,14 @@ export default {
     templatesBase: {
       type: Array,
       default: () => ([])
+    },
+    templateInfos: {
+      type: Array,
+      default: () => ([])
+    },
+    fieldInfos: {
+      type: Array,
+      default: () => ([])
     }
   }
 }

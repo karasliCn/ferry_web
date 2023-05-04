@@ -148,6 +148,7 @@ export default {
       deep: true,
       handler(val) {
         this.models = { ...this.models, ...val }
+        console.log(JSON.stringify(this.models, null, 2))
       }
     }
   },
@@ -190,6 +191,7 @@ export default {
       this.models.status = -1
     },
     generateModle(genList) {
+      debugger
       for (let i = 0; i < genList.length; i++) {
         if (genList[i].type === 'grid') {
           genList[i].columns.forEach(item => {
@@ -197,7 +199,24 @@ export default {
           })
         } else {
           if (this.value && Object.keys(this.value).indexOf(genList[i].model) >= 0) {
-            this.models[genList[i].model] = this.value[genList[i].model]
+            if (genList[i].type === 'select') {
+              const field = this.data.list.find(field => field.model === genList[i].model)
+              if (field) {
+                let label = ''
+                let selOptions = [];
+                if (field.options.remote) {
+                  selOptions = field.options.remoteOptions
+                } else {
+                  const selOptions = field.options.options
+                }
+                const selected = selOptions.find(selOpt => selOpt.value === this.value[genList[i].model])
+                if (selected) {
+                  this.models[genList[i].model] = selected.label
+                }
+              }
+            } else {
+              this.models[genList[i].model] = this.value[genList[i].model]
+            }
           } else {
             if (genList[i].type === 'blank') {
               this.$set(this.models, genList[i].model, genList[i].options.defaultType === 'String' ? '' : (genList[i].options.defaultType === 'Object' ? {} : []))

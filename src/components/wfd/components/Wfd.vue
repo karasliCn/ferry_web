@@ -17,6 +17,8 @@
         :tasks="tasks"
         :templates="templates"
         :templates-base="templatesBase"
+        :template-infos="templateInfos"
+        :field-infos="fieldInfos"
         :signal-defs="processModel.signalDefs"
         :message-defs="processModel.messageDefs"
         :on-change="(key,val)=>{onItemCfgChange(key,val)}"
@@ -103,6 +105,14 @@ export default {
       default: () => ([])
     },
     templatesBase: {
+      type: Array,
+      default: () => ([])
+    },
+    templateInfos: {
+      type: Array,
+      default: () => ([])
+    },
+    fieldInfos: {
       type: Array,
       default: () => ([])
     }
