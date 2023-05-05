@@ -138,7 +138,6 @@ export default {
     submitAction(item) {
       this.$refs['ruleForm'].validate((valid) => {
         if (valid) {
-          debugger
           this.submitDisabled = true
           var stateMap = {}
           this.ruleForm.process = parseInt(this.$route.query.processId)

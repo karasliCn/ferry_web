@@ -268,7 +268,6 @@ export default {
     }
   },
   mounted() {
-    debugger
     console.log('call mounted')
     console.log(JSON.stringify(this.model))
     if (this.model.assignType === 'template') {

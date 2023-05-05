@@ -36,6 +36,14 @@ export function handleWorkOrder(data) {
   })
 }
 
+export function suspendWorkOrder(data) {
+  return request({
+    url: '/api/v1/work-order/suspend',
+    method: 'post',
+    data
+  })
+}
+
 // 结束工单
 export function unityWorkOrder(params) {
   return request({

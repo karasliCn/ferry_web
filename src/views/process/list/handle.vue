@@ -2,29 +2,29 @@
   <div class="app-container">
     <div v-if="isLoadingStatus" />
     <div v-else>
-      <el-card class="box-card">
-        <div class="text item">
-          <el-steps v-if="currentNode.clazz !== undefined && currentNode.clazz !== null && currentNode.clazz !== ''" :active="activeIndex" finish-status="success">
-            <template v-for="(item, index) in nodeStepList">
-              <el-step
-                v-if="item.isHideNode === false ||
-                  item.isHideNode === undefined ||
-                  item.isHideNode == null ||
-                  item.id === processStructureValue.workOrder.current_state"
-                :key="index"
-                :title="item.label"
-              />
-            </template>
-          </el-steps>
-          <div v-else>
-            <el-alert
-              show-icon
-              title="未找到当前工单流程信息，请确认当前工单绑定的流程是否存在。"
-              type="warning"
-            />
-          </div>
-        </div>
-      </el-card>
+      <!--      <el-card class="box-card">-->
+      <!--        <div class="text item">-->
+      <!--          <el-steps v-if="currentNode.clazz !== undefined && currentNode.clazz !== null && currentNode.clazz !== ''" :active="activeIndex" finish-status="success">-->
+      <!--            <template v-for="(item, index) in nodeStepList">-->
+      <!--              <el-step-->
+      <!--                v-if="item.isHideNode === false ||-->
+      <!--                  item.isHideNode === undefined ||-->
+      <!--                  item.isHideNode == null ||-->
+      <!--                  item.id === processStructureValue.workOrder.current_state"-->
+      <!--                :key="index"-->
+      <!--                :title="item.label"-->
+      <!--              />-->
+      <!--            </template>-->
+      <!--          </el-steps>-->
+      <!--          <div v-else>-->
+      <!--            <el-alert-->
+      <!--              show-icon-->
+      <!--              title="未找到当前工单流程信息，请确认当前工单绑定的流程是否存在。"-->
+      <!--              type="warning"-->
+      <!--            />-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--      </el-card>-->
 
       <el-alert
         v-if="activeIndex !== nodeStepList.length && processStructureValue.workOrder.is_end===1"
@@ -121,11 +121,18 @@
                   v-if="processStructureValue.workOrder.is_end===0 && item.source===currentNode.id"
                   :key="index"
                   type="primary"
+                  :disabled="isSuspend"
                   @click="submitAction(item)"
                 >
                   {{ item.label }}
                 </el-button>
               </template>
+              <el-button
+                type="primary"
+                @click="suspendAction()"
+              >
+                {{ this.isSuspend ? "恢复" :"挂起" }}
+              </el-button>
             </div>
           </div>
         </div>
@@ -179,7 +186,8 @@ Vue.component(GenerateForm.name, GenerateForm)
 import {
   processStructure,
   handleWorkOrder,
-  activeOrder
+  activeOrder,
+  suspendWorkOrder
 } from '@/api/process/work-order'
 
 import { listUser } from '@/api/system/sysuser'
@@ -187,6 +195,16 @@ import { listUser } from '@/api/system/sysuser'
 import { mapGetters } from 'vuex'
 import { getDeptList } from '@/api/system/dept'
 export default {
+  props: {
+    isSuspend: {
+      type: Boolean,
+      default: false
+    },
+    disableSubmit: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       isLoadingStatus: true,
@@ -278,6 +296,9 @@ export default {
 
         // 判断是否需要主动处理
         for (var stateValue of this.processStructureValue.workOrder.state) {
+          if (this.processStructureValue.workOrder.current_state === stateValue.id) {
+            this.isSuspend = stateValue.is_suspend || false
+          }
           if (this.processStructureValue.workOrder.current_state === stateValue.id && stateValue.processor.length > 1) {
             this.isActiveProcessing = true
             break
@@ -318,6 +339,19 @@ export default {
             this.getProcessNodeList()
           }
         })
+      })
+    },
+    suspendAction() {
+      const suspendData = {
+        is_suspend: !this.isSuspend,
+        work_order_id: parseInt(this.$route.query.workOrderId),
+        source_state: this.processStructureValue.workOrder.current_state
+      }
+      console.log(JSON.stringify(suspendData))
+      suspendWorkOrder(suspendData).then(res => {
+        if (res.code === 200) {
+          this.getProcessNodeList()
+        }
       })
     },
     // 获取提示消息

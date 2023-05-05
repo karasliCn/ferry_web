@@ -261,9 +261,6 @@ export default {
     }
   },
   mounted() {
-    debugger
-    console.log('call mounted')
-    console.log(JSON.stringify(this.model))
     if (this.model.assignType === 'template') {
       getTemplateFields(this.model.selectedTemplate).then(response => {
         this.fields = response.data.form_structure.list
