@@ -103,6 +103,13 @@
     </el-form-item>
     <el-form-item>
       <el-button type="primary" icon="el-icon-search" size="small" @click="getList">搜索</el-button>
+      <el-button
+        v-if="genre === 'all'"
+        type="primary"
+        icon="el-icon-search"
+        size="small"
+        @click="exportList"
+      >导出时间明细</el-button>
     </el-form-item>
   </div>
 </template>
@@ -167,6 +174,16 @@ export default {
         this.listQuery.endTime = parseTime(this.timeValue[1])
       }
       this.$emit('handleSearch', this.listQuery)
+    },
+    exportList() {
+      if (this.timeValue === null || this.timeValue === undefined || this.timeValue === '') {
+        this.listQuery.startTime = ''
+        this.listQuery.endTime = ''
+      } else {
+        this.listQuery.startTime = parseTime(this.timeValue[0])
+        this.listQuery.endTime = parseTime(this.timeValue[1])
+      }
+      this.$emit('handleExport', this.listQuery)
     },
     remoteUserList(query) {
       listUser({

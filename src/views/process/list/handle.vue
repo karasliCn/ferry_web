@@ -2,30 +2,6 @@
   <div class="app-container">
     <div v-if="isLoadingStatus" />
     <div v-else>
-      <!--      <el-card class="box-card">-->
-      <!--        <div class="text item">-->
-      <!--          <el-steps v-if="currentNode.clazz !== undefined && currentNode.clazz !== null && currentNode.clazz !== ''" :active="activeIndex" finish-status="success">-->
-      <!--            <template v-for="(item, index) in nodeStepList">-->
-      <!--              <el-step-->
-      <!--                v-if="item.isHideNode === false ||-->
-      <!--                  item.isHideNode === undefined ||-->
-      <!--                  item.isHideNode == null ||-->
-      <!--                  item.id === processStructureValue.workOrder.current_state"-->
-      <!--                :key="index"-->
-      <!--                :title="item.label"-->
-      <!--              />-->
-      <!--            </template>-->
-      <!--          </el-steps>-->
-      <!--          <div v-else>-->
-      <!--            <el-alert-->
-      <!--              show-icon-->
-      <!--              title="未找到当前工单流程信息，请确认当前工单绑定的流程是否存在。"-->
-      <!--              type="warning"-->
-      <!--            />-->
-      <!--          </div>-->
-      <!--        </div>-->
-      <!--      </el-card>-->
-
       <el-alert
         v-if="activeIndex !== nodeStepList.length && processStructureValue.workOrder.is_end===1"
         style="margin-top: 15px"

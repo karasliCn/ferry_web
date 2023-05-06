@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { downLoadZip } from '@/utils/zipdownload'
 
 // 流程结构
 export function processStructure(params) {
@@ -25,6 +26,25 @@ export function workOrderList(params) {
     method: 'get',
     params
   })
+}
+
+export function circulationList(params) {
+  let baseUrl = '/api/v1/work-order/circulation-list'
+  const keys = Object.keys(params)
+  for (let index = 0; index < keys.length; index++) {
+    if (index === 0) {
+      baseUrl = baseUrl + '?'
+    }
+    if (index > 0) {
+      baseUrl = baseUrl + '&'
+    }
+    baseUrl = baseUrl + keys[index] + '=' + params[keys[index]]
+  }
+  downLoadZip(baseUrl, '工单时间明细.xlsx')
+}
+
+export function downloadCirculationList(params) {
+  window.open()
 }
 
 // 处理工单

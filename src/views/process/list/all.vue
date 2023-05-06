@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-card class="box-card">
       <el-form ref="listQuery" :model="listQuery" :inline="true">
-        <WorkOrderSearch :genre="'all'" @handleSearch="handleSearch" />
+        <WorkOrderSearch :genre="'all'" @handleSearch="handleSearch" @handleExport="handleExport" />
       </el-form>
 
       <el-table v-loading="loading" border :data="ticketList" @selection-change="handleSelectionChange">
@@ -63,14 +63,14 @@
               icon="el-icon-position"
               @click="handleInversion(scope.row)"
             >转交</el-button>
-            <el-button
-              v-if="scope.row.is_end===0"
-              v-permisaction="['process:list:all:end']"
-              size="mini"
-              type="text"
-              icon="el-icon-switch-button"
-              @click="handleUnity(scope.row)"
-            >结单</el-button>
+            <!--            <el-button-->
+            <!--              v-if="scope.row.is_end===0"-->
+            <!--              v-permisaction="['process:list:all:end']"-->
+            <!--              size="mini"-->
+            <!--              type="text"-->
+            <!--              icon="el-icon-switch-button"-->
+            <!--              @click="handleUnity(scope.row)"-->
+            <!--            >结单</el-button>-->
             <el-button
               v-permisaction="['process:list:all:delete']"
               size="mini"
@@ -120,7 +120,13 @@
 </template>
 
 <script>
-import { workOrderList, unityWorkOrder, inversionWorkOrder, deleteWorkOrder } from '@/api/process/work-order'
+import {
+  workOrderList,
+  unityWorkOrder,
+  inversionWorkOrder,
+  deleteWorkOrder,
+  circulationList
+} from '@/api/process/work-order'
 import { listUser } from '@/api/system/sysuser'
 
 // 搜索
@@ -174,11 +180,23 @@ export default {
         this.loading = false
       })
     },
+    exportCirculation() {
+      this.listQuery.page = this.queryParams.pageIndex
+      this.listQuery.per_page = this.queryParams.pageSize
+      this.listQuery.classify = 4
+      circulationList(this.listQuery)
+    },
     handleSearch(val) {
       for (var k in val) {
         this.listQuery[k] = val[k]
       }
       this.getList()
+    },
+    handleExport(val) {
+      for (var k in val) {
+        this.listQuery[k] = val[k]
+      }
+      this.exportCirculation()
     },
     handleView(row) {
       this.$router.push({ name: 'ProcessListHandle', query: { workOrderId: row.id, processId: row.process }})

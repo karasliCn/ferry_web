@@ -68,9 +68,9 @@
           :value="model.selectedTemplate"
           :multiple="false"
           :filterable="true"
-          @change="(e) => { onChange('selectedTemplate', e); getTemplateInfo(e) }"
+          @change="(e) => { onChange('selectedTemplate', e); onChange('assignValue', []); getTemplateInfo(e) }"
         >
-          <el-option v-for="template in templatesBase" :key="template.id" :label="template.name" :value="template.id" />
+          <el-option v-for="template in templatesBase.filter(tb => templates.includes(tb.id))" :key="template.id" :label="template.name" :value="template.id" />
         </el-select>
       </div>
       <div v-if="model.assignType === 'template' && model.selectedTemplate && model.selectedTemplate !== ''" class="panelRow">
@@ -268,8 +268,6 @@ export default {
     }
   },
   mounted() {
-    console.log('call mounted')
-    console.log(JSON.stringify(this.model))
     if (this.model.assignType === 'template') {
       getTemplateFields(this.model.selectedTemplate).then(response => {
         this.fields = response.data.form_structure.list
