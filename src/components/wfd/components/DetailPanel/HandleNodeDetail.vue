@@ -262,9 +262,12 @@ export default {
   },
   updated() {
     if (this.model.assignType === 'template') {
-      getTemplateFields(this.model.selectedTemplate).then(response => {
-        this.fields = response.data.form_structure.list
-      })
+      const assignValueField = this.fields.find(f => f.model === this.model.assignValue)
+      if (!assignValueField) {
+        getTemplateFields(this.model.selectedTemplate).then(response => {
+          this.fields = response.data.form_structure.list
+        })
+      }
     }
   },
   mounted() {
