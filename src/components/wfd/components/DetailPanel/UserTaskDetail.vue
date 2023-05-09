@@ -267,6 +267,13 @@ export default {
       fields: []
     }
   },
+  update() {
+    if (this.model.assignType === 'template') {
+      getTemplateFields(this.model.selectedTemplate).then(response => {
+        this.fields = response.data.form_structure.list
+      })
+    }
+  },
   mounted() {
     if (this.model.assignType === 'template') {
       getTemplateFields(this.model.selectedTemplate).then(response => {

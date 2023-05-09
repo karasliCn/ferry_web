@@ -166,11 +166,7 @@ export default {
                   if (v.assignType !== 'template') {
                     stateMap['processor'] = Array.from(new Set(v.assignValue))
                   } else {
-                    const inputField = values.find(value => Object.keys(value).includes(v.assignValue))
-                    if (inputField) {
-                      stateMap['process_method'] = 'person'
-                      stateMap['processor'] = [inputField[v.assignValue]]
-                    }
+                    stateMap['processor'] = v.assignValue
                   }
                 }
                 stateMap['label'] = v.label
