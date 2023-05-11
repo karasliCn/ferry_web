@@ -74,6 +74,20 @@
           :props="widget.options.props"
         />
       </template>
+
+      <template v-else-if="widget.type === 'select'">
+        <el-select
+          v-model="dataModel"
+          :disabled="true"
+          :multiple="widget.options.multiple"
+          :clearable="widget.options.clearable"
+          :placeholder="widget.options.placeholder"
+          :style="{width: widget.options.width}"
+          :filterable="widget.options.filterable"
+        >
+          <el-option v-for="item in (widget.options.remote ? widget.options.remoteOptions : widget.options.options)" :key="item.value" :value="item.value" :label="widget.options.showLabel || widget.options.remote?item.label:item.value" />
+        </el-select>
+      </template>
       <template v-else>
         <div>
           {{ dataModel }}
@@ -222,6 +236,7 @@
           :placeholder="widget.options.placeholder"
           :style="{width: widget.options.width}"
           :filterable="widget.options.filterable"
+          :preview="preview"
         >
           <el-option v-for="item in (widget.options.remote ? widget.options.remoteOptions : widget.options.options)" :key="item.value" :value="item.value" :label="widget.options.showLabel || widget.options.remote?item.label:item.value" />
         </el-select>
