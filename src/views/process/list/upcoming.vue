@@ -95,6 +95,24 @@
         </el-form>
       </el-dialog>
 
+      <el-dialog
+        title="选择节点"
+        :visible.sync="nodeSelectVisible"
+        width="30%"
+      >
+        <el-form ref="nodeForm" :model="nodeForm" :rules="rules" label-width="60px" class="demo-ruleForm">
+          <el-form-item label="节点" prop="node_id">
+            <el-select v-model="nodeForm.node_id" placeholder="选择节点" size="small" style="width: 100%">
+              <el-option v-for="(item, index) in nodeList.filter(node => node.processed != true )" :key="index" :label="item.label" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item style="text-align: right">
+            <el-button type="primary" @click="goToNode()">提交</el-button>
+            <el-button @click="nodeSelectVisible = false">关闭</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+
       <pagination
         v-show="total>0"
         :total="total"
@@ -112,6 +130,7 @@ import { listUser } from '@/api/system/sysuser'
 
 // 搜索
 import WorkOrderSearch from './components/search/index'
+import { mapGetters } from 'vuex'
 
 export default {
   components: { WorkOrderSearch },
@@ -120,6 +139,7 @@ export default {
       users: [],
       nodeList: [],
       dialogVisible: false,
+      nodeSelectVisible: false,
       queryParams: {},
       total: 0,
       loading: false,
@@ -134,6 +154,11 @@ export default {
         user_id: '',
         remarks: ''
       },
+      nodeForm: {
+        work_order_id: '',
+        process_id: '',
+        node_id: ''
+      },
       rules: {
         node_id: [
           { required: true, message: '请选择节点', trigger: 'change' }
@@ -143,6 +168,11 @@ export default {
         ]
       }
     }
+  },
+  computed: {
+    ...mapGetters([
+      'userId'
+    ])
   },
   created() {
     this.getList()
@@ -166,9 +196,19 @@ export default {
         this.listQuery[k] = val[k]
       }
       this.getList()
+      console.log(this.userId)
     },
     handleView(row) {
-      this.$router.push({ name: 'ProcessListHandle', query: { workOrderId: row.id, processId: row.process }})
+      const userStateNodes = row.state.filter(state => state.processed !== true && state.processor.includes(this.userId))
+      if (userStateNodes.length > 1) {
+        this.nodeSelectVisible = true
+        this.nodeForm.work_order_id = row.id
+        this.nodeForm.process_id = row.process
+        this.nodeList = userStateNodes
+        this.nodeForm.node_id = userStateNodes[0].id
+      } else {
+        this.$router.push({ name: 'ProcessListHandle', query: { workOrderId: row.id, processId: row.process }})
+      }
     },
     handleInversion(row) {
       this.dialogVisible = true
@@ -195,6 +235,9 @@ export default {
           })
         }
       })
+    },
+    goToNode() {
+      this.$router.push({ name: 'ProcessListHandle', query: { workOrderId: this.nodeForm.work_order_id, processId: this.nodeForm.process_id, nodeId: this.nodeForm.node_id }})
     }
   }
 }

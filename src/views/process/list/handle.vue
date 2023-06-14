@@ -107,7 +107,7 @@
                 type="primary"
                 @click="suspendAction()"
               >
-                {{ this.isSuspend ? "恢复" :"挂起" }}
+                {{ this.isSuspend ? '恢复' : '挂起' }}
               </el-button>
             </div>
           </div>
@@ -157,6 +157,7 @@ import {
   GenerateForm
 } from '@/components/VueFormMaking'
 import 'form-making/dist/FormMaking.css'
+
 Vue.component(GenerateForm.name, GenerateForm)
 
 import {
@@ -170,6 +171,7 @@ import { listUser } from '@/api/system/sysuser'
 
 import { mapGetters } from 'vuex'
 import { getDeptList } from '@/api/system/dept'
+
 export default {
   props: {
     isSuspend: {
@@ -238,7 +240,8 @@ export default {
     getProcessNodeList() {
       processStructure({
         processId: this.$route.query.processId,
-        workOrderId: this.$route.query.workOrderId
+        workOrderId: this.$route.query.workOrderId,
+        nodeId: this.$route.query.nodeId
       }).then(response => {
         this.isActiveProcessing = false
         this.processStructureValue = response.data
@@ -247,7 +250,7 @@ export default {
         this.nodeStepList = []
         if (this.processStructureValue.nodes) {
           for (var i = 0; i < this.processStructureValue.nodes.length; i++) {
-            if (this.processStructureValue.nodes[i].id === this.processStructureValue.workOrder.current_state) {
+            if ((this.$route.query.nodeId !== null && this.processStructureValue.nodes[i].id === this.$route.query.nodeId) || this.processStructureValue.nodes[i].id === this.processStructureValue.workOrder.current_state) {
               // 当前节点
               this.nodeStepList.push(this.processStructureValue.nodes[i])
               this.activeIndex = this.nodeStepList.length - 1
@@ -310,8 +313,8 @@ export default {
           tpls: this.tpls
         }).then(response => {
           if (response.code === 200) {
-          // this.$router.push({ name: 'upcoming' })
-          // window.location.reload()
+            // this.$router.push({ name: 'upcoming' })
+            // window.location.reload()
             this.getProcessNodeList()
           }
         })
