@@ -23,6 +23,11 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
+                <el-form-item label="当前节点:" style="margin-bottom: 5px">
+                  <span>{{ this.currentNode.label || '' }}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
                 <el-form-item label="优先级:" style="margin-bottom: 0">
                   <span v-if="processStructureValue.workOrder.priority===2">
                     <el-tag type="warning">紧急</el-tag>
@@ -35,6 +40,7 @@
                   </span>
                 </el-form-item>
               </el-col>
+
             </el-row>
           </el-form>
         </div>
@@ -188,7 +194,8 @@ export default {
       isLoadingStatus: true,
       currentNode: {
         hideTpls: null,
-        writeTpls: null
+        writeTpls: null,
+        label: ''
       },
       isActiveProcessing: false,
       tpls: [],
