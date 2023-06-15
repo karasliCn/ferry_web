@@ -283,8 +283,8 @@ export default {
     handleInversion(row) {
       this.dialogVisible = true
       this.ruleForm.work_order_id = row.id
-      this.nodeList = row.state
-      if (this.nodeList.length === 1) {
+      this.nodeList = row.state.filter(state => state.processed !== true)
+      if (this.nodeList.length > 0) {
         this.ruleForm.node_id = this.nodeList[0].id
       }
       listUser({
