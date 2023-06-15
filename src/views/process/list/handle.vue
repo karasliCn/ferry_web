@@ -282,7 +282,7 @@ export default {
 
         // 判断是否需要主动处理
         for (var stateValue of this.processStructureValue.workOrder.state) {
-          if (this.processStructureValue.workOrder.current_state === stateValue.id) {
+          if (this.$route.query.nodeId === stateValue.id || this.processStructureValue.workOrder.current_state === stateValue.id) {
             this.isSuspend = stateValue.is_suspend || false
           }
           if (this.processStructureValue.workOrder.current_state === stateValue.id && stateValue.processor.length > 1) {
