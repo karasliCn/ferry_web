@@ -47,12 +47,19 @@ export default {
       return this.$confirm(`确定要移除 ${file.name}？`)
     },
     handleSuccess(response, file, fileList) {
-      this.fileListTmp.push({
-        uid: file.uid,
-        name: file.name,
-        url: response.data
-      })
-      this.$emit('fileList', this.fileListTmp)
+      debugger
+      if (response.code !== 200) {
+        this.$message.warning(`${response.msg}`)
+        this.fileListTmp = this.fileListTmp.filter(fileTmp => fileTmp.name !== file.name)
+        this.$emit('fileList', this.fileListTmp)
+      } else {
+        this.fileListTmp.push({
+          uid: file.uid,
+          name: file.name,
+          url: response.data
+        })
+        this.$emit('fileList', this.fileListTmp)
+      }
     }
   }
 }
