@@ -199,7 +199,23 @@ export default {
       console.log(this.userId)
     },
     handleView(row) {
-      const userStateNodes = row.state.filter(state => state.processed !== true && state.processor.includes(this.userId))
+      debugger
+      const storage = this.$store.state
+      // const userStateNodes = row.state.filter(state => state.processed !== true && state.processor.includes(this.userId))
+      const userStateNodes = row.state.filter(state => {
+        let canView = false
+        if (state.process_method === 'person') {
+          canView = state.processor.includes(storage.user.userId)
+        }
+        if (state.process_method === 'role') {
+          canView = state.processor.some(p => storage.user.roleIds.includes(p))
+        }
+        if (state.process_method === 'department') {
+          canView = state.processor.includes(storage.user.deptId)
+        }
+        return state.processed !== true && canView
+      })
+
       if (userStateNodes.length > 1) {
         this.nodeSelectVisible = true
         this.nodeForm.work_order_id = row.id

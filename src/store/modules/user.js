@@ -37,6 +37,12 @@ const mutations = {
   },
   SET_PERMISSIONS: (state, permisaction) => {
     state.permisaction = permisaction
+  },
+  SET_DEPTID: (state, deptId) => {
+    state.deptId = deptId
+  },
+  SET_ROLEIDS: (state, roleIds) => {
+    state.roleIds = roleIds
   }
 }
 
@@ -65,7 +71,7 @@ const actions = {
           resolve()
         }
 
-        const { userId, roles, name, avatar, introduction, permissions } = response.data
+        const { userId, roles, name, avatar, introduction, permissions, deptId, roleIds } = response.data
 
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
@@ -77,6 +83,8 @@ const actions = {
         commit('SET_USERID', userId)
         commit('SET_AVATAR', avatar)
         commit('SET_INTRODUCTION', introduction)
+        commit('SET_DEPTID', deptId)
+        commit('SET_ROLEIDS', roleIds)
         resolve(response)
       }).catch(() => {
         commit('SET_TOKEN', '')
