@@ -113,7 +113,7 @@
                 type="primary"
                 @click="suspendAction()"
               >
-                {{ this.isSuspend ? '恢复' : '挂起' }}
+                {{ processStructureValue.workOrder.is_end===0 && this.isSuspend ? '恢复' : '挂起' }}
               </el-button>
             </div>
           </div>
@@ -241,14 +241,14 @@ export default {
     ])
   },
   created() {
-    this.getProcessNodeList()
+    this.getProcessNodeList(this.$route.query.nodeId)
   },
   methods: {
-    getProcessNodeList() {
+    getProcessNodeList(nodeId) {
       processStructure({
         processId: this.$route.query.processId,
         workOrderId: this.$route.query.workOrderId,
-        nodeId: this.$route.query.nodeId
+        nodeId: nodeId
       }).then(response => {
         this.isActiveProcessing = false
         this.processStructureValue = response.data
@@ -262,17 +262,21 @@ export default {
         }, {})
         if (this.processStructureValue.nodes) {
           for (var i = 0; i < this.processStructureValue.nodes.length; i++) {
-            if ((this.$route.query.nodeId !== null && this.processStructureValue.nodes[i].id === this.$route.query.nodeId) || this.processStructureValue.nodes[i].id === this.processStructureValue.workOrder.current_state) {
+            if ((nodeId !== null && this.processStructureValue.nodes[i].id === nodeId) || this.processStructureValue.nodes[i].id === this.processStructureValue.workOrder.current_state) {
               // 当前节点
-              this.nodeStepList.push(this.processStructureValue.nodes[i])
-              if (currentStateMap[this.$route.query.nodeId] && currentStateMap[this.$route.query.nodeId].processed) {
+              if (nodeId !== null && currentStateMap[nodeId] && currentStateMap[nodeId].processed) {
                 continue
               }
+              if (currentStateMap[this.processStructureValue.nodes[i].id] && currentStateMap[this.processStructureValue.nodes[i].id].processed) {
+                continue
+              }
+              this.nodeStepList.push(this.processStructureValue.nodes[i])
               this.activeIndex = this.nodeStepList.length - 1
               if (i + 1 === this.processStructureValue.nodes.length) {
                 this.activeIndex = this.nodeStepList.length
               }
               this.currentNode = this.processStructureValue.nodes[i]
+              break
             } else if (!this.processStructureValue.nodes[i].isHideNode) {
               // 非隐藏节点
               this.nodeStepList.push(this.processStructureValue.nodes[i])
@@ -290,7 +294,7 @@ export default {
 
         // 判断是否需要主动处理
         for (var stateValue of this.processStructureValue.workOrder.state) {
-          if (this.$route.query.nodeId === stateValue.id || this.processStructureValue.workOrder.current_state === stateValue.id) {
+          if (nodeId === stateValue.id || this.processStructureValue.workOrder.current_state === stateValue.id) {
             this.isSuspend = stateValue.is_suspend || false
           }
           if (this.processStructureValue.workOrder.current_state === stateValue.id && stateValue.processor.length > 1) {
@@ -300,6 +304,8 @@ export default {
         }
         this.isLoadingStatus = false
         this.getAlertMessage()
+      }).then(() => {
+        Promise.resolve()
       })
     },
     submitAction(item) {
@@ -341,7 +347,6 @@ export default {
         work_order_id: parseInt(this.$route.query.workOrderId),
         source_state: this.processStructureValue.workOrder.current_state
       }
-      console.log(JSON.stringify(suspendData))
       suspendWorkOrder(suspendData).then(res => {
         if (res.code === 200) {
           this.getProcessNodeList()
@@ -355,7 +360,7 @@ export default {
       }
     },
     activeOrderActive() {
-      var jsonData = [{
+      const jsonData = [{
         id: this.nodeStepList[this.activeIndex].id,
         label: this.nodeStepList[this.activeIndex].label,
         process_method: 'person',

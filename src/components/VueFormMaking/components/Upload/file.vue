@@ -47,7 +47,6 @@ export default {
       return this.$confirm(`确定要移除 ${file.name}？`)
     },
     handleSuccess(response, file, fileList) {
-      debugger
       if (response.code !== 200) {
         this.$message.warning(`${response.msg}`)
         this.fileListTmp = this.fileListTmp.filter(fileTmp => fileTmp.name !== file.name)

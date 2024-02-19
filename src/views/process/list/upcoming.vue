@@ -199,7 +199,6 @@ export default {
       console.log(this.userId)
     },
     handleView(row) {
-      debugger
       const storage = this.$store.state
       // const userStateNodes = row.state.filter(state => state.processed !== true && state.processor.includes(this.userId))
       const userStateNodes = row.state.filter(state => {
