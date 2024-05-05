@@ -198,31 +198,7 @@ export default {
         } else {
           if (this.value && Object.keys(this.value).indexOf(genList[i].model) >= 0) {
             this.models[genList[i].model] = this.value[genList[i].model]
-            // if (genList[i].type === 'select' ) {
-            //   console.log(JSON.stringify(genList[i]))
-            // } else {
-            //   this.models[genList[i].model] = this.value[genList[i].model]
-            // }
 
-            // if (genList[i].type === 'select') {
-            //   const field = this.data.list.find(field => field.model === genList[i].model)
-            //   if (field) {
-            //     let label = ''
-            //     let selOptions = [];
-            //     if (field.options.remote) {
-            //       selOptions = field.options.remoteOptions
-            //     } else {
-            //       selOptions = field.options.options
-            //     }
-            //     const selected = selOptions.find(selOpt => selOpt.value === this.value[genList[i].model])
-            //     if (selected) {
-            //       this.models[genList[i].model] = { ...selOptions }
-            //     }
-            //   }
-            //   console.log(JSON.stringify(this.models[genList[i].model], null,2))
-            // } else {
-            //   this.models[genList[i].model] = this.value[genList[i].model]
-            // }
           } else {
             if (genList[i].type === 'blank') {
               this.$set(this.models, genList[i].model, genList[i].options.defaultType === 'String' ? '' : (genList[i].options.defaultType === 'Object' ? {} : []))

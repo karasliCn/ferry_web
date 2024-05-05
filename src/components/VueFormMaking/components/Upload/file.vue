@@ -29,7 +29,7 @@ export default {
   props: ['element', 'preview', 'dataModel'],
   data() {
     return {
-      fileListTmp: []
+      fileListTmp: this.dataModel
     }
   },
   methods: {
