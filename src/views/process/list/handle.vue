@@ -110,6 +110,7 @@
                 </el-button>
               </template>
               <el-button
+                class="tiffany-btn"
                 type="primary"
                 @click="suspendAction()"
               >
@@ -345,7 +346,8 @@ export default {
       const suspendData = {
         is_suspend: !this.isSuspend,
         work_order_id: parseInt(this.$route.query.workOrderId),
-        source_state: this.processStructureValue.workOrder.current_state
+        source_state: this.processStructureValue.workOrder.current_state,
+        remarks: this.remarks
       }
       suspendWorkOrder(suspendData).then(res => {
         if (res.code === 200) {
