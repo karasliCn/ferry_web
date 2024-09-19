@@ -103,6 +103,7 @@
                   v-if="processStructureValue.workOrder.is_end===0 && item.source===currentNode.id"
                   :key="index"
                   type="primary"
+                  :loading="isLoading"
                   :disabled="isSuspend"
                   @click="submitAction(item)"
                 >
@@ -112,6 +113,7 @@
               <el-button
                 class="tiffany-btn"
                 type="primary"
+                :loading="isLoading"
                 @click="suspendAction()"
               >
                 {{ processStructureValue.workOrder.is_end===0 && this.isSuspend ? '恢复' : '挂起' }}
@@ -182,6 +184,10 @@ import { getDeptList } from '@/api/system/dept'
 export default {
   props: {
     isSuspend: {
+      type: Boolean,
+      default: false
+    },
+    isLoading: {
       type: Boolean,
       default: false
     },
@@ -310,6 +316,8 @@ export default {
       })
     },
     submitAction(item) {
+      this.isLoading = true
+      // this.isLoadingStatus = true
       var promiseList = []
       this.tpls = []
       for (var tpl of this.processStructureValue.tpls) {
@@ -335,6 +343,8 @@ export default {
           tpls: this.tpls
         }).then(response => {
           if (response.code === 200) {
+            this.isLoading = false
+            // this.isLoadingStatus = false
             // this.$router.push({ name: 'upcoming' })
             // window.location.reload()
             this.getProcessNodeList()

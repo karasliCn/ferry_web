@@ -9,7 +9,8 @@ const state = {
   introduction: '',
   roles: [],
   permissions: [],
-  permisaction: []
+  permisaction: [],
+  needModPwd: false
 }
 
 const mutations = {
@@ -43,6 +44,9 @@ const mutations = {
   },
   SET_ROLEIDS: (state, roleIds) => {
     state.roleIds = roleIds
+  },
+  SET_NEEDMODPWD: (state, needModPwd) => {
+    state.needModPwd = needModPwd
   }
 }
 
@@ -51,10 +55,10 @@ const actions = {
   login({ commit }, userInfo) {
     return new Promise((resolve, reject) => {
       login(userInfo).then(response => {
-        const { token } = response
+        const { token, needModPwd } = response
         commit('SET_TOKEN', token)
         setToken(token)
-        resolve()
+        resolve({ needModPwd })
       }).catch(error => {
         reject(error)
       })

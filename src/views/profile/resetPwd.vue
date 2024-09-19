@@ -24,6 +24,24 @@ import { updateUserPwd } from '@/api/system/sysuser'
 
 export default {
   data() {
+    const validatePassword = (rule, value, callback) => {
+      if (this.user.newPassword !== value) {
+        callback(new Error('两次输入的密码不一致'))
+      }
+      const ruleArray = ['[a-z]', '[A-Z]', '[0-9]', '[!@#$%^&*()-+_=～\\[\\]]']
+      const matchRuleCount = ruleArray.reduce((accu, curr) => {
+        if (new RegExp(curr).test(value)) {
+          accu++
+          return accu
+        }
+        return accu
+      }, 0)
+      if (matchRuleCount >= 3) {
+        callback()
+      } else {
+        callback(new Error('密码需包含字母大小写、数字、特殊符号[!@#$%^&*()-+_=～]四种中的三种'))
+      }
+    }
     const equalToPassword = (rule, value, callback) => {
       if (this.user.newPassword !== value) {
         callback(new Error('两次输入的密码不一致'))
@@ -46,7 +64,8 @@ export default {
         ],
         newPassword: [
           { required: true, message: '新密码不能为空', trigger: 'blur' },
-          { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' },
+          { required: true, validator: validatePassword, trigger: 'blur' }
         ],
         confirmPassword: [
           { required: true, message: '确认密码不能为空', trigger: 'blur' },
@@ -76,7 +95,7 @@ export default {
       })
     },
     close() {
-      this.$store.dispatch('tagsView/delView', this.$route)
+      // this.$store.dispatch('tagsView/delView', this.$route)
       this.$router.push({ path: '/index' })
     }
   }

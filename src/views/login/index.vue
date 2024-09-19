@@ -28,8 +28,15 @@
       </div>
       <div class="login-border">
         <div class="login-main">
-          <div class="login-title"> 用户登录 </div>
-          <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
+          <div class="login-title"> 用户登录</div>
+          <el-form
+            ref="loginForm"
+            :model="loginForm"
+            :rules="loginRules"
+            class="login-form"
+            autocomplete="on"
+            label-position="left"
+          >
             <el-form-item prop="username">
               <span class="svg-container">
                 <i class="el-icon-user" />
@@ -86,22 +93,57 @@
                   @keyup.enter.native="handleLogin"
                 />
               </el-form-item>
-              <div class="login-code" style="cursor:pointer; width: 30%;height: 48px;float: right;background-color: #f0f1f5;">
-                <img style="height: 48px;width: 100%;border: 1px solid rgba(0,0,0, 0.1);border-radius:5px;" :src="codeUrl" @click="getCode">
+              <div
+                class="login-code"
+                style="cursor:pointer; width: 30%;height: 48px;float: right;background-color: #f0f1f5;"
+              >
+                <img
+                  style="height: 48px;width: 100%;border: 1px solid rgba(0,0,0, 0.1);border-radius:5px;"
+                  :src="codeUrl"
+                  @click="getCode"
+                >
               </div>
             </template>
-            <div prop="code" style="width: 100%;float: left;margin-bottom: 13px">
-              <el-checkbox v-model="isLdapTmp">LDAP登陆</el-checkbox>
-            </div>
-            <el-button :loading="loading" type="primary" style="width:100%;padding:12px 20px;margin-bottom:30px;" @click.native.prevent="handleLogin">
+            <!--            <div prop="code" style="width: 100%;float: left;margin-bottom: 13px">-->
+            <!--              <el-checkbox v-model="isLdapTmp">LDAP登陆</el-checkbox>-->
+            <!--            </div>-->
+            <el-button
+              :loading="loading"
+              type="primary"
+              style="width:100%;padding:12px 20px;margin-bottom:30px;"
+              @click.native.prevent="handleLogin"
+            >
               <span v-if="!loading">登 录</span>
               <span v-else>登 录 中...</span>
+            </el-button>
+            <el-button plain @click="dialogFormVisible = true">
+              Open a Form nested Dialog
             </el-button>
           </el-form>
         </div>
       </div>
 
     </div>
+    <div>
+      <el-dialog title="密码已过期，请更新用户密码" :visible.sync="dialogFormVisible">
+        <el-form ref="form" :model="user" :rules="rules" label-width="80px">
+          <el-form-item label="旧密码" prop="oldPassword">
+            <el-input v-model="user.oldPassword" placeholder="请输入旧密码" type="password" />
+          </el-form-item>
+          <el-form-item label="新密码" prop="newPassword">
+            <el-input v-model="user.newPassword" placeholder="请输入新密码" type="password" />
+          </el-form-item>
+          <el-form-item label="确认密码" prop="confirmPassword">
+            <el-input v-model="user.confirmPassword" placeholder="请确认密码" type="password" />
+          </el-form-item>
+          <el-form-item class="change-password">
+            <el-button type="primary" size="mini" @click="submit">保存</el-button>
+            <el-button type="danger" size="mini" @click="close">关闭</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+    </div>
+
   </div>
 </template>
 
@@ -110,10 +152,36 @@
 import { getCodeImg } from '@/api/login'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
+import { updateUserPwd } from '@/api/system/sysuser'
 
 export default {
   name: 'LoginIndex',
   data() {
+    const validatePassword = (rule, value, callback) => {
+      if (this.user.newPassword !== value) {
+        callback(new Error('两次输入的密码不一致'))
+      }
+      const ruleArray = ['[a-z]', '[A-Z]', '[0-9]', '[!@#$%^&*()-+_=～\\[\\]]']
+      const matchRuleCount = ruleArray.reduce((accu, curr) => {
+        if (new RegExp(curr).test(value)) {
+          accu++
+          return accu
+        }
+        return accu
+      }, 0)
+      if (matchRuleCount >= 3) {
+        callback()
+      } else {
+        callback(new Error('密码需包含字母大小写、数字、特殊符号[!@#$%^&*()-+_=～]四种中的三种'))
+      }
+    }
+    const equalToPassword = (rule, value, callback) => {
+      if (this.user.newPassword !== value) {
+        callback(new Error('两次输入的密码不一致'))
+      } else {
+        callback()
+      }
+    }
     return {
       isLdapTmp: false,
       codeUrl: '',
@@ -140,7 +208,31 @@ export default {
       loading: false,
       redirect: undefined,
       otherQuery: {},
-      currentTime: null
+      currentTime: null,
+      dialogFormVisible: false,
+      formLabelWidth: '120px',
+      passwordTyleStatus: true,
+      user: {
+        oldPassword: undefined,
+        newPassword: undefined,
+        confirmPassword: undefined,
+        passwordType: 1
+      },
+      // 表单校验
+      rules: {
+        oldPassword: [
+          { required: true, message: '旧密码不能为空', trigger: 'blur' }
+        ],
+        newPassword: [
+          { required: true, message: '新密码不能为空', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' },
+          { required: true, validator: validatePassword, trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, message: '确认密码不能为空', trigger: 'blur' },
+          { required: true, validator: equalToPassword, trigger: 'blur' }
+        ]
+      }
     }
   },
   computed: {
@@ -192,6 +284,30 @@ export default {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
+    submit() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          if (!this.passwordTyleStatus) {
+            this.user.passwordType = 0
+          }
+          this.user.passwordType = 0
+          updateUserPwd(this.user.oldPassword, this.user.newPassword, this.user.passwordType).then(
+            response => {
+              if (response.code === 200) {
+                this.msgSuccess('修改成功')
+                this.dialogFormVisible = false
+                this.$router.push({ path: '/' })
+              } else {
+                this.msgError(response.msg)
+              }
+            }
+          )
+        }
+      })
+    },
+    close() {
+      this.dialogFormVisible = false
+    },
     getCurrentTime() {
       this.timer = setInterval(_ => {
         this.currentTime = moment().format('YYYY-MM-DD HH时mm分ss秒')
@@ -236,7 +352,14 @@ export default {
           this.$store.dispatch('user/login', this.loginForm)
             .then((data) => {
               // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.$router.push({ path: '/' })
+              if (data && data.needModPwd) {
+                this.user.newPassword = undefined
+                this.user.oldPassword = undefined
+                this.user.confirmPassword = undefined
+                this.dialogFormVisible = true
+              } else {
+                this.$router.push({ path: '/' })
+              }
               this.loading = false
             })
             .catch(() => {
@@ -264,44 +387,44 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #fff;
 $cursor: #fff;
 
-.login-container{
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    margin: 0 auto;
-    background: url("../../assets/login.png") no-repeat;
-    background-color: #304175;
-    position: relative;
-    background-size: cover;
-    height: 100vh;
-    background-position: 50%;
+.login-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  background: url("../../assets/login.png") no-repeat;
+  background-color: #304175;
+  position: relative;
+  background-size: cover;
+  height: 100vh;
+  background-position: 50%;
 }
 
-#particles-js{
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    position: absolute;
+#particles-js {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  position: absolute;
 }
 
-.login-weaper{
+.login-weaper {
   margin: 0 auto;
   width: 1000px;
-  -webkit-box-shadow: -4px 5px 10px rgba(0,0,0,.4);
-  box-shadow: -4px 5px 10px rgba(0,0,0,.4);
+  -webkit-box-shadow: -4px 5px 10px rgba(0, 0, 0, .4);
+  box-shadow: -4px 5px 10px rgba(0, 0, 0, .4);
   z-index: 1000;
 }
 
-.login-left{
+.login-left {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
   -webkit-box-pack: center;
@@ -311,19 +434,20 @@ $cursor: #fff;
   -webkit-box-direction: normal;
   -ms-flex-direction: column;
   flex-direction: column;
-  background-color: rgba(64,158,255,0);
+  background-color: rgba(64, 158, 255, 0);
   color: #fff;
   float: left;
   width: 50%;
   position: relative;
-    min-height: 500px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-  .login-time{
+  min-height: 500px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+
+  .login-time {
     position: absolute;
     left: 25px;
     top: 25px;
@@ -336,7 +460,7 @@ $cursor: #fff;
   }
 }
 
-.login-left .img{
+.login-left .img {
   width: 120px;
   height: 120px;
   border-radius: 3px;
@@ -350,36 +474,36 @@ $cursor: #fff;
   font-weight: 600;
 }
 
-.login-border{
+.login-border {
   position: relative;
-    min-height: 500px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    border-left: none;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    color: #fff;
-    background-color: hsla(0,0%,100%,.9);
-    width: 50%;
-    float: left;
+  min-height: 500px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  border-left: none;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  color: #fff;
+  background-color: hsla(0, 0%, 100%, .9);
+  width: 50%;
+  float: left;
 }
 
-.login-main{
-    margin: 0 auto;
-    width: 65%;
+.login-main {
+  margin: 0 auto;
+  width: 65%;
 }
 
-.login-title{
+.login-title {
   color: #333;
-    margin-bottom: 40px;
-    font-weight: 500;
-    font-size: 22px;
-    text-align: center;
-    letter-spacing: 4px;
+  margin-bottom: 40px;
+  font-weight: 500;
+  font-size: 22px;
+  text-align: center;
+  letter-spacing: 4px;
 }
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -413,15 +537,16 @@ $cursor: #fff;
   }
 
   .el-form-item {
-    border: 1px solid rgba(0,0,0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.8);
     border-radius: 5px;
     color: #454545;
   }
 }
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
 
@@ -478,5 +603,9 @@ $light_gray:#eee;
       display: none;
     }
   }
+}
+
+.change-password {
+  border: 0
 }
 </style>
